@@ -116,8 +116,8 @@ async def start_transaction(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     user = update.message.from_user
     logger.info(f"USER @{user.username}:{user.id} - Transaction.")
     keyboard_options_category = [
-        ["Food", "Beauty"],
-        ["Transport", "Food"],
+        ["coffee", "grocery", "going out", "rent"],
+        ["bills", "gifts", "beauty", "extra"],
         ["Cancel transaction"],
     ]
     await update.message.reply_text(
@@ -138,8 +138,7 @@ async def choose_tag_for_transaction(
     """Ask the user for a description of a custom category."""
     text = update.message.text
     keyboard_options_tags = [
-        ["Holiday", "Relocation"],
-        ["None"],
+        ["Holiday", "None"],
         ["Cancel transaction"],
     ]
 
@@ -174,8 +173,11 @@ async def choose_place_for_transaction(
             reply_markup=ReplyKeyboardRemove(),
         )
         return ConversationHandler.END
+
+    context.user_data["tag"] = None
     if tag != "None":
         context.user_data["tag"] = tag
+
     await update.message.reply_text("Please enter the `place` name:")
 
     return CHOOSINGAMOUNT
@@ -211,7 +213,7 @@ async def choose_date_for_transaction(
         )
         return ConversationHandler.END
     context.user_data["amount"] = amount
-    await update.message.reply_text("Please enter the `date` (YYYY-MM-DD) or `0`:")
+    await update.message.reply_text("Please enter the `date` (YYYY-MM-DD) or `today`:")
     return CHOOSINGACCOUNT
 
 
@@ -220,17 +222,16 @@ async def choose_account_for_transaction(
 ) -> int:
     """Ask the user for a description of a custom category."""
     date = update.message.text
-    keyboard_options_accounts = [
-        ["Revolut", "Wise"],
-        ["Cash", "Bank of Ireland"],
-        ["Cancel transaction"],
-    ]
 
-    if not date:
+    if date.lower() == "today":
         date = datetime.datetime.now().strftime("%Y-%m-%d")
 
     context.user_data["date"] = date
 
+    keyboard_options_accounts = [
+        ["Revolut", "Wise", "BOI"],
+        ["Cancel transaction"],
+    ]
     await update.message.reply_text(
         "Please choose a `account` from the following options:",
         reply_markup=ReplyKeyboardMarkup(
@@ -254,7 +255,15 @@ async def complete_transaction(
         return ConversationHandler.END
     context.user_data["account"] = account
     data = context.user_data
-    manager.create_transaction(**data)
+
+    manager.create_transaction(
+        category=data["category"],
+        tag=data["tag"],
+        place=data["place"],
+        amount=data["amount"],
+        date=data["date"],
+        account=data["account"],
+    )
 
     markup = get_main_menu_keyboard()
     await update.message.reply_text(
