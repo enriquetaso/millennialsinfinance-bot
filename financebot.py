@@ -1,3 +1,4 @@
+import datetime
 import os
 import logging
 from dotenv import load_dotenv
@@ -148,7 +149,7 @@ async def choose_tag_for_transaction(
             reply_markup=ReplyKeyboardRemove(),
         )
         return ConversationHandler.END
-    context.user_data["transaction_category"] = text
+    context.user_data["category"] = text
     await update.message.reply_text(
         "Please choose from the following options:",
         reply_markup=ReplyKeyboardMarkup(
@@ -174,7 +175,7 @@ async def choose_place_for_transaction(
         )
         return ConversationHandler.END
     if tag != "None":
-        context.user_data["transaction_tag"] = tag
+        context.user_data["tag"] = tag
     await update.message.reply_text("Please enter the `place` name:")
 
     return CHOOSINGAMOUNT
@@ -192,7 +193,7 @@ async def choose_amount_for_transaction(
             reply_markup=ReplyKeyboardRemove(),
         )
         return ConversationHandler.END
-    context.user_data["transaction_place"] = place
+    context.user_data["place"] = place
     await update.message.reply_text("Please enter the `amount` you spent €:")
     return CHOOSINGDATE
 
@@ -209,8 +210,8 @@ async def choose_date_for_transaction(
             reply_markup=ReplyKeyboardRemove(),
         )
         return ConversationHandler.END
-    context.user_data["transaction_amount"] = amount
-    await update.message.reply_text("Please enter the `date` (YYYY-MM-DD) :")
+    context.user_data["amount"] = amount
+    await update.message.reply_text("Please enter the `date` (YYYY-MM-DD) or `0`:")
     return CHOOSINGACCOUNT
 
 
@@ -225,13 +226,10 @@ async def choose_account_for_transaction(
         ["Cancel transaction"],
     ]
 
-    if date == "Cancel transaction":
-        await update.message.reply_text(
-            "Transaction cancelled.",
-            reply_markup=ReplyKeyboardRemove(),
-        )
-        return ConversationHandler.END
-    context.user_data["transaction_date"] = date
+    if not date:
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+
+    context.user_data["date"] = date
 
     await update.message.reply_text(
         "Please choose a `account` from the following options:",
@@ -254,7 +252,7 @@ async def complete_transaction(
             reply_markup=ReplyKeyboardRemove(),
         )
         return ConversationHandler.END
-    context.user_data["transaction_account"] = account
+    context.user_data["account"] = account
     data = context.user_data
     manager.create_transaction(**data)
 

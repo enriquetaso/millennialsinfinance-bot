@@ -41,13 +41,14 @@ def create_simple_entity(entity: str, name: str, action="POST") -> int:
 
 
 def create_transaction(
-    date: str, description: str, amount: float, category: str, account: str, tags: list
+    date: str, amount: float, category: str, account: str, place: str, tag: str = None
 ) -> int:
     """Create a transaction."""
     url = "http://localhost/finance/transactions/"
     payload = {
         "date": "2020-01-01",
-        "description": "Test transaction",
+        "description": "Operation sent by Bot",
+        "place": "test",
         "amount": 100,
         "category": "Test",
         "account": "Test",
