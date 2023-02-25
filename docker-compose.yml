@@ -1,0 +1,13 @@
+version: "3.10"
+
+services:
+
+  bot:
+    build: .
+    command: python financebot.py
+    volumes:
+      - .:/code
+    ports:
+      - "8008:8008"
+    env_file:
+      - .env
