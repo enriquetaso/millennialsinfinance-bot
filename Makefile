@@ -8,3 +8,6 @@ shell:
 
 clean:
 	docker compose down
+
+logs:
+	docker compose logs -f bot
