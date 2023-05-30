@@ -25,7 +25,7 @@ def set_categories_env_variable():
 
     # Check if the request was successful
     if response.status_code != 200:
-        raise Exception(f"GET /categories/ {response.status_code}")
+        raise Exception(f"GET {url} {response.status_code}")
 
     # Get the categories from the response
     categories = response.json()

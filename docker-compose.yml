@@ -11,3 +11,10 @@ services:
       - "8008:8008"
     env_file:
       - .env
+    networks:
+      - shared_network
+
+# This network must be created manually before running docker-compose up
+networks:
+  shared_network:
+    external: true
