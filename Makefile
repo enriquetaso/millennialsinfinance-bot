@@ -11,3 +11,6 @@ clean:
 
 logs:
 	docker compose logs -f bot
+
+restart:
+	docker compose restart bot

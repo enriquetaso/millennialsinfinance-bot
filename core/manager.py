@@ -1,10 +1,8 @@
 import os
+import json
 import logging
 import requests
 from dotenv import load_dotenv
-
-from core.constraints import CATEGORIES_PK, TAGS_PK, ACCOUNTS_PK
-
 
 load_dotenv()
 
@@ -12,6 +10,9 @@ DJANGO_USERNAME = os.getenv("DJANGO_USERNAME", "admin")
 PASSWORD = os.getenv("PASSWORD", "admin")
 BASE_URL = os.getenv("BASE_URL", "http://localhost/finance/")
 
+CATEGORIES_PK = json.loads(os.getenv('CATEGORIES_PK'))
+TAGS_PK = json.loads(os.getenv('TAGS_PK'))
+ACCOUNTS_PK = json.loads(os.getenv('ACCOUNTS_PK'))
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -87,5 +88,6 @@ def create_transaction(
     if response.status_code == 201:
         logger.info("Transaction created")
     else:
-        logger.error("Transaction not created")
+        logger.error("Transaction not created {}".format(response.status_code))
+
     return response.status_code

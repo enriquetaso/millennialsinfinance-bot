@@ -1,5 +1,6 @@
 import datetime
 import os
+import json
 import logging
 from dotenv import load_dotenv
 from typing import Dict
@@ -16,11 +17,13 @@ from telegram.ext import (
 
 from core import manager
 
-load_dotenv()
+# load_dotenv()
 
 TOKEN = os.getenv("TOKEN", "none")
 ALLOWED_USERS = int(os.getenv("ALLOWED_USERS", 0))
 
+TAGS_PK = json.loads(os.getenv('TAGS_PK'))
+ACCOUNTS_PK = json.loads(os.getenv('ACCOUNTS_PK'))
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -46,6 +49,26 @@ def facts_to_str(user_data: Dict[str, str]) -> str:
     facts = [f"{key} - {value}" for key, value in user_data.items()]
     return "\n".join(facts).join(["\n", "\n"])
 
+def _get_categories_menu_keyboard() -> ReplyKeyboardMarkup:
+    """Helper function for formatting the categories menu keyboard."""
+    CATEGORIES_PK = json.loads(os.getenv('CATEGORIES_PK'))
+
+    reply_keyboard = []
+    aux = []
+    c = 0
+    for category in CATEGORIES_PK.keys():
+        if c == 5:
+            reply_keyboard.append(aux)
+            aux = []
+            c = 0
+        aux.append(category)
+        c += 1
+    reply_keyboard.append(aux)
+
+    # add cancel option
+    reply_keyboard.append(["Cancel transaction"])
+    logger.debug(reply_keyboard)
+    return reply_keyboard
 
 def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
     """Helper function for formatting the main menu keyboard."""
@@ -115,11 +138,9 @@ async def start_transaction(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     """Ask the user for a description of a custom category."""
     user = update.message.from_user
     logger.info(f"USER @{user.username}:{user.id} - Transaction.")
-    keyboard_options_category = [
-        ["coffee", "grocery", "going out", "rent"],
-        ["bills", "gifts", "beauty", "extra"],
-        ["Cancel transaction"],
-    ]
+
+    keyboard_options_category = _get_categories_menu_keyboard()
+
     await update.message.reply_text(
         "Please choose from the following options:",
         reply_markup=ReplyKeyboardMarkup(
